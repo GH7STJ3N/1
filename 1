@@ -1,4 +1,4 @@
-local Players = game:GetService('Players')
+ local Players = game:GetService('Players')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local RunService = game:GetService('RunService')
 local UserInputService = game:GetService('UserInputService')
@@ -2144,3 +2144,1373 @@ pcall(function()
 -- Add to BackpackApp directly
 if BackpackApp and BackpackApp.add_item then
 local petCopy = TableUtil.deep_copy(item)
+petCopy.unique = HttpService:GenerateGUID(false)
+BackpackApp:add_item(petCopy)
+print('✓ Added pet to backpack:', item.kind)
+end
+end)
+end
+end
+end
+local historyRecord = createTradeHistoryRecord(mockState.trade)
+appendToTradeHistory(historyRecord)
+mockState.active = false
+mockState.trade = nil
+mockState.tradeCompleting = false
+mockState.scamWarningShown = true
+mockState.canShowTradeRequest = true
+mockState.tradeRequestBlocked = false
+UIManager.set_app_visibility('TradeApp', false)
+task.wait(0.1)
+showBlockedTradeRequests()
+if HintApp then
+HintApp:hint({
+text = 'Trade completed! Check your backpack.',
+length = 5,
+overridable = true,
+})
+end
+if TradeHistoryApp and UIManager.is_visible('TradeHistoryApp') then
+TradeHistoryApp:_refresh()end
+end end
+end
+else
+end
+end
+warn('No active trade')
+-- Function to make partner unaccept
+function makePartnerUnaccept()
+if mockState.active and mockState.trade then
+-- Make partner unaccept based on current stage
+if mockState.trade.current_stage == 'negotiation' then
+if mockState.trade.recipient_oﬀer.negotiated then
+mockState.trade.recipient_oﬀer.negotiated = false
+mockState.trade.oﬀer_version = mockState.trade.oﬀer_version
++ 1
+TradeApp:_overwrite_local_trade_state(mockState.trade)
+end
+elseif mockState.trade.current_stage == 'confirmation' then
+if mockState.trade.recipient_oﬀer.confirmed then
+mockState.trade.recipient_oﬀer.confirmed = false
+mockState.trade.oﬀer_version = mockState.trade.oﬀer_version
++ 1
+TradeApp:_overwrite_local_trade_state(mockState.trade)
+end
+end
+else
+end
+end
+warn('No active trade')
+unacceptButton.MouseButton1Click:Connect(function()
+makePartnerUnaccept()
+end)
+acceptButton.MouseButton1Click:Connect(function()
+makePartnerAccept()
+end)
+-- Initialize mock trade function (now automatically shows trade request)
+local function initializeMockTrade()
+if mockState.active then
+return
+end
+-- Automatically show trade request when starting trade
+task.spawn(showTradeRequest)
+end
+initButton.MouseButton1Click:Connect(function()
+initializeMockTrade()
+end)-- Settings update functions
+partnerBox.FocusLost:Connect(function()
+updatePartnerFromUsername(partnerBox.Text)
+end)
+acceptBox.FocusLost:Connect(function()
+local value = tonumber(acceptBox.Text)
+if value and value >= 0 then
+CONFIG.AUTO_ACCEPT_DELAY = value
+else
+end
+end)
+acceptBox.Text = tostring(CONFIG.AUTO_ACCEPT_DELAY)
+confirmBox.FocusLost:Connect(function()
+local value = tonumber(confirmBox.Text)
+if value and value >= 0 then
+CONFIG.AUTO_CONFIRM_DELAY = value
+else
+end
+end)
+confirmBox.Text = tostring(CONFIG.AUTO_CONFIRM_DELAY)
+spectatorBox.FocusLost:Connect(function()
+local value = tonumber(spectatorBox.Text)
+if value and value >= 0 then
+CONFIG.SPECTATOR_COUNT = value
+if mockState.trade then
+mockState.trade.subscriber_count = value
+if TradeApp.refresh_all then
+TradeApp:refresh_all()
+FriendHighlight(true)
+end
+end
+else
+spectatorBox.Text = tostring(CONFIG.SPECTATOR_COUNT)
+end
+end)
+requestDelayBox.FocusLost:Connect(function()
+local value = tonumber(requestDelayBox.Text)
+if value and value >= 0 then
+CONFIG.TRADE_REQUEST_DELAY = value
+else
+end
+end)
+requestDelayBox.Text = tostring(CONFIG.TRADE_REQUEST_DELAY)
+-- PLAYERS TAB with smaller elements
+local playersFrame = tabFrames['Players']
+local playerListFrame = Instance.new('ScrollingFrame')
+playerListFrame.Size = UDim2.new(1, 0, 1, 0)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)playerListFrame.BackgroundTransparency = 0.5
+playerListFrame.BorderSizePixel = 0
+playerListFrame.ScrollBarThickness = 4
+playerListFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+playerListFrame.ScrollBarImageTransparency = 0.5
+playerListFrame.Parent = playersFrame
+local listCorner = Instance.new('UICorner')
+listCorner.CornerRadius = UDim.new(0, 4)
+listCorner.Parent = playerListFrame
+local playerListLayout = Instance.new('UIListLayout')
+playerListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+playerListLayout.Padding = UDim.new(0, 3)
+playerListLayout.Parent = playerListFrame
+local listPadding = Instance.new('UIPadding')
+listPadding.PaddingTop = UDim.new(0, 4)
+listPadding.PaddingBottom = UDim.new(0, 4)
+listPadding.PaddingLeft = UDim.new(0, 4)
+listPadding.PaddingRight = UDim.new(0, 4)
+listPadding.Parent = playerListFrame
+function createPlayerButton(player, index)
+local button = Instance.new('TextButton')
+button.Size = UDim2.new(1, -8, 0, 28)
+button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+button.BackgroundTransparency = 0.2
+button.Text = ''
+button.Parent = playerListFrame
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = button
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = Color3.fromRGB(80, 80, 80)
+buttonStroke.Thickness = 1.0
+buttonStroke.Transparency = 0.3
+buttonStroke.Parent = button
+local nameLabel = Instance.new('TextLabel')
+nameLabel.Size = UDim2.new(1, -8, 1, 0)
+nameLabel.Position = UDim2.new(0, 4, 0, 0)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = player.Name
+nameLabel.Font = Enum.Font.FredokaOne
+nameLabel.TextSize = 11
+nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.TextTransparency = 0
+nameLabel.Parent = buttonlocal nameStroke = Instance.new('UIStroke')
+nameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+nameStroke.Color = Color3.new(0, 0, 0)
+nameStroke.Thickness = 0.8
+nameStroke.Transparency = 0.8
+nameStroke.Parent = nameLabel
+button.BackgroundTransparency = 1
+buttonStroke.Transparency = 1
+nameLabel.TextTransparency = 1
+nameStroke.Transparency = 1
+button.MouseButton1Click:Connect(function()
+local originalSize = button.Size
+TweenService:Create(
+button,
+TweenInfo.new(
+0.08,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Size = UDim2.new(
+originalSize.X.Scale,
+originalSize.X.Oﬀset - 2,
+originalSize.Y.Scale,
+originalSize.Y.Oﬀset - 2
+),
+}
+):Play()
+task.wait(0.08)
+TweenService
+:Create(
+button,
+TweenInfo.new(
+0.15,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+),
+{
+Size = originalSize,
+}
+)
+:Play()
+setActiveTab('Control')
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 150, 255),
+Thickness = 1.2,
+}
+)
+:Play()
+partnerBox.Text = player.Name
+updatePartnerFromUsername(player.Name)
+task.wait(0.5)
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 100, 100),
+Thickness = 0.8,
+}
+)
+:Play()
+end)
+button.LayoutOrder = index
+return button
+end
+function createSelectPlayerFromTradeButton()
+local button = Instance.new('TextButton')
+button.Size = UDim2.new(1, -8, 0, 28)
+button.BackgroundColor3 = Color3.fromRGB(65, 65, 81)
+button.BackgroundTransparency = 0.2
+button.Name = 'SelectFromTradeButton'
+button.Text = ''
+button.Parent = playerListFrame
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = button
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = Color3.fromRGB(159, 159, 159)
+buttonStroke.Thickness = 1.0buttonStroke.Transparency = 0.3
+buttonStroke.Parent = button
+local nameLabel = Instance.new('TextLabel')
+nameLabel.Size = UDim2.new(1, -8, 1, 0)
+nameLabel.Position = UDim2.new(0, 4, 0, 0)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = 'Select Partner From Trade'
+nameLabel.Font = Enum.Font.FredokaOne
+nameLabel.TextSize = 11
+nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.TextTransparency = 0
+nameLabel.Parent = button
+local nameStroke = Instance.new('UIStroke')
+nameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+nameStroke.Color = Color3.new(0, 0, 0)
+nameStroke.Thickness = 0.8
+nameStroke.Transparency = 0.8
+nameStroke.Parent = nameLabel
+button.MouseButton1Click:Connect(function()
+local originalSize = button.Size
+TweenService:Create(
+button,
+TweenInfo.new(
+0.08,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Size = UDim2.new(
+originalSize.X.Scale,
+originalSize.X.Oﬀset - 2,
+originalSize.Y.Scale,
+originalSize.Y.Oﬀset - 2
+),
+}
+):Play()
+task.wait(0.08)
+TweenService
+:Create(
+button,
+TweenInfo.new(
+0.15,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+),
+{
+Size = originalSize,}
+)
+:Play()
+setActiveTab('Control')
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 150, 255),
+Thickness = 1.2,
+}
+)
+:Play()
+pcall(function()
+local function getPlayerByNameInsensitive(name)
+name = string.lower(name)
+for _, player in ipairs(Players:GetPlayers()) do
+if string.lower(player.Name) == name then
+return player
+end
+end
+return nil
+end
+local TradePart =
+Players.LocalPlayer.PlayerGui.TradeApp.Frame.NegotiationFrame.Header.PartnerFrame.NameL
+abel.Text
+local Player = getPlayerByNameInsensitive(TradePart)
+partnerBox.Text = Player.Name
+updatePartnerFromUsername(Player.Name)
+end)
+task.wait(0.5)
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 100, 100),
+Thickness = 0.8,}
+)
+:Play()
+end)
+button.LayoutOrder = -999
+return button
+end
+createSelectPlayerFromTradeButton()
+function animatePlayerList()
+for i, button in ipairs(playerListButtons) do
+local delay = (i - 1) * 0.07
+task.spawn(function()
+task.wait(delay)
+local buttonStroke = button:FindFirstChildOfClass('UIStroke')
+local nameLabel = button:FindFirstChildOfClass('TextLabel')
+local nameStroke = nameLabel
+and nameLabel:FindFirstChildOfClass('UIStroke')
+local stage1 = TweenInfo.new(
+0.12,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+local stage2 = TweenInfo.new(
+0.3,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+)
+local stage3 = TweenInfo.new(
+0.15,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+TweenService:Create(button, stage1, {
+Size = UDim2.new(1.02, -8, 0, 30),
+Position = UDim2.new(-0.01, 0, 0, 0),
+BackgroundTransparency = 0.4,
+}):Play()
+task.wait(0.12)
+TweenService:Create(button, stage2, {
+Size = UDim2.new(1, -8, 0, 28),
+Position = UDim2.new(0, 0, 0, 0),
+BackgroundTransparency = 0.2,
+}):Play()if buttonStroke then
+TweenService:Create(buttonStroke, stage2, {
+Thickness = 1.0,
+Transparency = 0.3,
+}):Play()
+end
+task.wait(0.08)
+if nameLabel then
+TweenService:Create(nameLabel, stage3, { TextTransparency = 0 })
+:Play()
+end
+if nameStroke then
+TweenService:Create(nameStroke, stage3, { Transparency = 0.8 })
+:Play()
+end
+end)
+end
+end
+function refreshPlayerList()
+for _, child in ipairs(playerListFrame:GetChildren()) do
+if
+child:IsA('TextButton')
+and child.Name ~= 'SelectFromTradeButton'
+then
+end
+end
+child:Destroy()
+playerListButtons = {}
+local playersList = Players:GetPlayers()
+table.sort(playersList, function(a, b)
+return a.Name:lower() < b.Name:lower()
+end)
+for i, player in ipairs(playersList) do
+local button = createPlayerButton(player, i)
+table.insert(playerListButtons, button)
+end
+playerListFrame.CanvasSize = UDim2.new(0, 0, 0, (#playersList * 32) + 8)
+end
+refreshPlayerList()
+Players.PlayerAdded:Connect(function()
+hasShownAnimation['Players'] = false
+refreshPlayerList()
+if currentTab == 'Players' then
+hasShownAnimation['Players'] = true
+animatePlayerList()
+endend)
+Players.PlayerRemoving:Connect(function()
+hasShownAnimation['Players'] = false
+refreshPlayerList()
+if currentTab == 'Players' then
+hasShownAnimation['Players'] = true
+animatePlayerList()
+end
+end)
+-- USERS TAB with smaller elements
+local usersFrame = tabFrames['Users']
+-- User selection section
+local userListFrame = Instance.new('ScrollingFrame')
+userListFrame.Size = UDim2.new(1, 0, 0, 100)
+userListFrame.Position = UDim2.new(0, 0, 0, 0)
+userListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+userListFrame.BackgroundTransparency = 0.5
+userListFrame.BorderSizePixel = 0
+userListFrame.ScrollBarThickness = 4
+userListFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+userListFrame.ScrollBarImageTransparency = 0.5
+userListFrame.Parent = usersFrame
+local userListCorner = Instance.new('UICorner')
+userListCorner.CornerRadius = UDim.new(0, 4)
+userListCorner.Parent = userListFrame
+local userListLayout = Instance.new('UIListLayout')
+userListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+userListLayout.Padding = UDim.new(0, 3)
+userListLayout.Parent = userListFrame
+local userListPadding = Instance.new('UIPadding')
+userListPadding.PaddingTop = UDim.new(0, 4)
+userListPadding.PaddingBottom = UDim.new(0, 4)
+userListPadding.PaddingLeft = UDim.new(0, 4)
+userListPadding.PaddingRight = UDim.new(0, 4)
+userListPadding.Parent = userListFrame
+-- Chat messages section
+local chatSection = Instance.new('Frame')
+chatSection.Size = UDim2.new(1, 0, 0, 170)
+chatSection.Position = UDim2.new(0, 0, 0, 105)
+chatSection.BackgroundTransparency = 1
+chatSection.Parent = usersFrame
+local chatHeading = Instance.new('TextLabel')
+chatHeading.Size = UDim2.new(1, 0, 0, 14)
+chatHeading.BackgroundTransparency = 1
+chatHeading.Text = 'Chat Messages'
+chatHeading.Font = Enum.Font.SourceSansSemiboldchatHeading.TextSize = 10
+chatHeading.TextColor3 = Color3.fromRGB(180, 180, 180)
+chatHeading.TextXAlignment = Enum.TextXAlignment.Left
+chatHeading.Parent = chatSection
+local chatListFrame = Instance.new('ScrollingFrame')
+chatListFrame.Size = UDim2.new(1, 0, 0, 154)
+chatListFrame.Position = UDim2.new(0, 0, 0, 16)
+chatListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+chatListFrame.BackgroundTransparency = 0.5
+chatListFrame.BorderSizePixel = 0
+chatListFrame.ScrollBarThickness = 4
+chatListFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+chatListFrame.ScrollBarImageTransparency = 0.5
+chatListFrame.Parent = chatSection
+local chatListCorner = Instance.new('UICorner')
+chatListCorner.CornerRadius = UDim.new(0, 4)
+chatListCorner.Parent = chatListFrame
+local chatListLayout = Instance.new('UIListLayout')
+chatListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+chatListLayout.Padding = UDim.new(0, 3)
+chatListLayout.Parent = chatListFrame
+local chatListPadding = Instance.new('UIPadding')
+chatListPadding.PaddingTop = UDim.new(0, 4)
+chatListPadding.PaddingBottom = UDim.new(0, 4)
+chatListPadding.PaddingLeft = UDim.new(0, 4)
+chatListPadding.PaddingRight = UDim.new(0, 4)
+chatListPadding.Parent = chatListFrame
+local customUsers = {
+'0002TeenVogue',
+'Raerae3654',
+'VaelUno',
+'Cartervss',
+'SihadPlayedYou',
+'OMGS0PHIA',
+'Xcallmeholly',
+'AveryxStarpets',
+'Hugso09',
+'ruthjavxn',
+'bwpico',
+'Hugeinvestor',
+'Barborich2',
+'Underthechemtrailss',
+'Bunzvii',
+'Qwrtylostaccount',
+'Sparklingorangelol',
+'Tr3ndzyy',
+'Jellycmt',
+'Ex4clusiv3',
+'Killersana66','Chasedatfund',
+'Pukgames0',
+'Lathifcal',
+'Tadhghogan009',
+'Firefelineyt',
+'Jasperisdic',
+'Coalberto',
+'Mouasx',
+'CodyPlays',
+'GustaboStraw',
+'Medinololboi',
+'Mousey_321',
+'AuraBossFarms',
+'Track_T0R',
+'Moon_Shadow3A',
+'Textymax',
+'Alisawants',
+'Colemule',
+'ColdShadow',
+'EvergreenPlane',
+'Elisacanlisten',
+'Money_Money1000',
+}
+function createUserButton(name, index)
+local button = Instance.new('TextButton')
+button.Size = UDim2.new(1, -8, 0, 26)
+button.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+button.BackgroundTransparency = 0.2
+button.Text = ''
+button.Parent = userListFrame
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = button
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = Color3.fromRGB(67, 80, 80)
+buttonStroke.Thickness = 1.0
+buttonStroke.Transparency = 0.3
+buttonStroke.Parent = button
+local nameLabel = Instance.new('TextLabel')
+nameLabel.Size = UDim2.new(1, -8, 1, 0)
+nameLabel.Position = UDim2.new(0, 4, 0, 0)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = name
+nameLabel.Font = Enum.Font.FredokaOne
+nameLabel.TextSize = 10
+nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.TextTransparency = 0
+nameLabel.Parent = buttonlocal nameStroke = Instance.new('UIStroke')
+nameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+nameStroke.Color = Color3.new(0, 0, 0)
+nameStroke.Thickness = 0.8
+nameStroke.Transparency = 0.8
+nameStroke.Parent = nameLabel
+button.BackgroundTransparency = 1
+buttonStroke.Transparency = 1
+nameLabel.TextTransparency = 1
+nameStroke.Transparency = 1
+button.MouseButton1Click:Connect(function()
+local originalSize = button.Size
+TweenService:Create(
+button,
+TweenInfo.new(
+0.08,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Size = UDim2.new(
+originalSize.X.Scale,
+originalSize.X.Oﬀset - 2,
+originalSize.Y.Scale,
+originalSize.Y.Oﬀset - 2
+),
+}
+):Play()
+task.wait(0.08)
+TweenService
+:Create(
+button,
+TweenInfo.new(
+0.15,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+),
+{
+Size = originalSize,
+}
+)
+:Play()
+setActiveTab('Control')
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out),
+{
+Color = Color3.fromRGB(100, 150, 255),
+Thickness = 1.2,
+}
+)
+:Play()
+partnerBox.Text = name
+updatePartnerFromUsername(name)
+task.wait(0.5)
+TweenService
+:Create(
+partnerStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 100, 100),
+Thickness = 0.8,
+}
+)
+:Play()
+end)
+button.LayoutOrder = index
+return button
+end
+function createChatButton(message, index)
+local button = Instance.new('TextButton')
+button.Size = UDim2.new(1, -8, 0, 26)
+button.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+button.BackgroundTransparency = 0.2
+button.Text = ''
+button.Parent = chatListFrame
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = button
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = Color3.fromRGB(100, 100, 150)
+buttonStroke.Thickness = 1.0
+buttonStroke.Transparency = 0.3
+buttonStroke.Parent = button
+local messageLabel = Instance.new('TextLabel')
+messageLabel.Size = UDim2.new(1, -8, 1, 0)
+messageLabel.Position = UDim2.new(0, 4, 0, 0)messageLabel.BackgroundTransparency = 1
+messageLabel.Text = message
+messageLabel.Font = Enum.Font.FredokaOne
+messageLabel.TextSize = 9
+messageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+messageLabel.TextXAlignment = Enum.TextXAlignment.Left
+messageLabel.TextTransparency = 0
+messageLabel.Parent = button
+local messageStroke = Instance.new('UIStroke')
+messageStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+messageStroke.Color = Color3.new(0, 0, 0)
+messageStroke.Thickness = 0.8
+messageStroke.Transparency = 0.8
+messageStroke.Parent = messageLabel
+button.BackgroundTransparency = 1
+buttonStroke.Transparency = 1
+messageLabel.TextTransparency = 1
+messageStroke.Transparency = 1
+button.MouseButton1Click:Connect(function()
+local originalSize = button.Size
+TweenService:Create(
+button,
+TweenInfo.new(
+0.08,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Size = UDim2.new(
+originalSize.X.Scale,
+originalSize.X.Oﬀset - 2,
+originalSize.Y.Scale,
+originalSize.Y.Oﬀset - 2
+),
+}
+):Play()
+task.wait(0.08)
+TweenService
+:Create(
+button,
+TweenInfo.new(
+0.15,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+)
+),
+{
+}
+:Play()
+Size = originalSize,if mockState.active and mockState.trade then
+sendTradeChatMessage(message)
+end
+end)
+button.LayoutOrder = index
+return button
+end
+function buildUsersList()
+for _, child in ipairs(userListFrame:GetChildren()) do
+if child:IsA('TextButton') then
+child:Destroy()
+end
+end
+userListButtons = {}
+for i, name in ipairs(customUsers) do
+local b = createUserButton(name, i)
+table.insert(userListButtons, b)
+end
+end
+userListFrame.CanvasSize = UDim2.new(0, 0, 0, (#customUsers * 29) + 8)
+function buildChatList()
+for _, child in ipairs(chatListFrame:GetChildren()) do
+if child:IsA('TextButton') then
+child:Destroy()
+end
+end
+for i, message in ipairs(CONFIG.CHAT_MESSAGES) do
+createChatButton(message, i)
+end
+chatListFrame.CanvasSize =
+UDim2.new(0, 0, 0, (#CONFIG.CHAT_MESSAGES * 29) + 8)
+end
+function animateUserList()
+for i, button in ipairs(userListButtons) do
+local delay = (i - 1) * 0.05
+task.spawn(function()
+task.wait(delay)
+local buttonStroke = button:FindFirstChildOfClass('UIStroke')
+local nameLabel = button:FindFirstChildOfClass('TextLabel')
+local nameStroke = nameLabel
+and nameLabel:FindFirstChildOfClass('UIStroke')
+local stage1 = TweenInfo.new(
+0.1,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+local stage2 = TweenInfo.new(0.25,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+)
+local stage3 = TweenInfo.new(
+0.15,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+TweenService:Create(button, stage1, {
+Size = UDim2.new(1.02, -8, 0, 28),
+Position = UDim2.new(-0.01, 0, 0, 0),
+BackgroundTransparency = 0.4,
+}):Play()
+task.wait(0.1)
+TweenService:Create(button, stage2, {
+Size = UDim2.new(1, -8, 0, 26),
+Position = UDim2.new(0, 0, 0, 0),
+BackgroundTransparency = 0.2,
+}):Play()
+if buttonStroke then
+TweenService:Create(buttonStroke, stage2, {
+Thickness = 1.0,
+Transparency = 0.3,
+}):Play()
+end
+task.wait(0.06)
+if nameLabel then
+TweenService:Create(nameLabel, stage3, { TextTransparency = 0 })
+:Play()
+end
+if nameStroke then
+TweenService:Create(nameStroke, stage3, { Transparency = 0.8 })
+:Play()
+end
+end)
+end
+-- Animate chat buttons
+for i, button in ipairs(chatListFrame:GetChildren()) do
+if button:IsA('TextButton') then
+local delay = (i - 1) * 0.05
+task.spawn(function()
+task.wait(delay)
+local buttonStroke = button:FindFirstChildOfClass('UIStroke')
+local messageLabel = button:FindFirstChildOfClass('TextLabel')
+local messageStroke = messageLabel
+and messageLabel:FindFirstChildOfClass('UIStroke')local stage1 = TweenInfo.new(
+0.1,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+local stage2 = TweenInfo.new(
+0.25,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+)
+local stage3 = TweenInfo.new(
+0.15,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+TweenService
+:Create(button, stage1, {
+Size = UDim2.new(1.02, -8, 0, 28),
+Position = UDim2.new(-0.01, 0, 0, 0),
+BackgroundTransparency = 0.4,
+})
+:Play()
+task.wait(0.1)
+TweenService
+:Create(button, stage2, {
+Size = UDim2.new(1, -8, 0, 26),
+Position = UDim2.new(0, 0, 0, 0),
+BackgroundTransparency = 0.2,
+})
+:Play()
+if buttonStroke then
+TweenService
+:Create(buttonStroke, stage2, {
+Thickness = 1.0,
+Transparency = 0.3,
+})
+:Play()
+end
+task.wait(0.06)
+if messageLabel then
+TweenService
+:Play()
+:Create(messageLabel, stage3, { TextTransparency = 0 })
+end
+if messageStroke then
+TweenService
+:Create(messageStroke, stage3, { Transparency = 0.8 }):Play()
+end
+end)
+end
+end
+end
+buildUsersList()
+buildChatList()
+-- PETS TAB with smaller elements
+local petsFrame = tabFrames['Pets']
+-- Pet input section
+local petInputSection = Instance.new('Frame')
+petInputSection.Size = UDim2.new(1, 0, 0, 160)
+petInputSection.Position = UDim2.new(0, 0, 0, 0)
+petInputSection.BackgroundTransparency = 1
+petInputSection.Parent = petsFrame
+local petNameHeading = Instance.new('TextLabel')
+petNameHeading.Size = UDim2.new(1, 0, 0, 14)
+petNameHeading.BackgroundTransparency = 1
+petNameHeading.Text = 'Pet Name To Add'
+petNameHeading.Font = Enum.Font.SourceSansSemibold
+petNameHeading.TextSize = 10
+petNameHeading.TextColor3 = Color3.fromRGB(180, 180, 180)
+petNameHeading.TextXAlignment = Enum.TextXAlignment.Left
+petNameHeading.Parent = petInputSection
+local petNameBox = Instance.new('TextBox')
+petNameBox.Size = UDim2.new(1, 0, 0, 22)
+petNameBox.Position = UDim2.new(0, 0, 0, 16)
+petNameBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+petNameBox.BackgroundTransparency = 0.2
+petNameBox.Text = ''
+petNameBox.PlaceholderText = 'Enter pet name...'
+petNameBox.Font = Enum.Font.FredokaOne
+petNameBox.TextSize = 10
+petNameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+petNameBox.ClearTextOnFocus = false
+petNameBox.Parent = petInputSection
+local petNameCorner = Instance.new('UICorner')
+petNameCorner.CornerRadius = UDim.new(0, 4)
+petNameCorner.Parent = petNameBox
+local petNameStroke = Instance.new('UIStroke')
+petNameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+petNameStroke.Color = Color3.fromRGB(100, 100, 100)
+petNameStroke.Thickness = 0.8
+petNameStroke.Transparency = 0.5
+petNameStroke.Parent = petNameBoxfunction capitalizeWords(str)
+local result = ''
+local i = 1
+local n = #str
+while i <= n do
+if str:sub(i, i):match('%S') then
+local wordStart = i
+while i <= n and str:sub(i, i):match('%S') do
+i = i + 1
+end
+local word = str:sub(wordStart, i - 1)
+if #word > 0 then
+word = word:sub(1, 1):upper() .. word:sub(2):lower()
+end
+result = result .. word
+else
+result = result .. str:sub(i, i)
+i = i + 1
+end
+end
+return result
+end
+petNameBox:GetPropertyChangedSignal('Text'):Connect(function()
+local inputText = petNameBox.Text
+local newText = capitalizeWords(inputText)
+if newText ~= inputText then
+petNameBox.Text = newText
+return
+end
+local displayedText = petNameBox.Text
+local cleanName = displayedText:lower():gsub('%s+', '')
+local isValid = false
+for _, name in ipairs(petSpawnState.validPetNames) do
+if
+name:lower() == displayedText:lower()
+or name:lower():gsub('%s+', '') == cleanName
+then
+isValid = true
+break
+end
+end
+TweenService
+:Create(petNameStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+Color = isValid and Color3.fromRGB(0, 255, 100)
+or displayedText == '' and Color3.fromRGB(100, 100, 100)
+or Color3.fromRGB(255, 100, 100),
+Thickness = isValid and 1.2 or 0.8,
+}):Play()
+end)
+local propContainer = Instance.new('Frame')
+propContainer.Size = UDim2.new(1, 0, 0, 22)
+propContainer.Position = UDim2.new(0, 0, 0, 43)
+propContainer.BackgroundTransparency = 1
+propContainer.Parent = petInputSection
+local prefixes = { 'M', 'N', 'F', 'R' }
+local prefixColors = {
+M = Color3.fromRGB(170, 0, 255),
+N = Color3.fromRGB(0, 255, 100),
+F = Color3.fromRGB(0, 200, 255),
+R = Color3.fromRGB(255, 50, 150),
+}
+local prefixButtons = {}
+for i, prefix in ipairs(prefixes) do
+local prefixButton = Instance.new('TextButton')
+prefixButton.Size = UDim2.new(0.23, 0, 1, 0)
+prefixButton.Position = UDim2.new((i - 1) * 0.25 + 0.01, 0, 0, 0)
+prefixButton.Text = prefix
+prefixButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+prefixButton.BackgroundTransparency = 0.2
+prefixButton.Font = Enum.Font.FredokaOne
+prefixButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+prefixButton.TextSize = 12
+prefixButton.Parent = propContainer
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = prefixButton
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = prefixColors[prefix]
+buttonStroke.Thickness = 1.0
+buttonStroke.Transparency = 0.5
+buttonStroke.Parent = prefixButton
+local textStroke = Instance.new('UIStroke')
+textStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+textStroke.Color = Color3.new(0, 0, 0)
+textStroke.Thickness = 1.0
+textStroke.Parent = prefixButton
+prefixButtons[prefix] = { button = prefixButton, stroke = buttonStroke }
+prefixButton.MouseButton1Click:Connect(function()
+if prefix == 'M' and petSpawnState.activeFlags['N'] then
+return
+end
+if prefix == 'N' and petSpawnState.activeFlags['M'] thenreturn
+end
+petSpawnState.activeFlags[prefix] =
+not petSpawnState.activeFlags[prefix]
+if petSpawnState.activeFlags[prefix] then
+prefixButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+TweenService
+:Create(
+buttonStroke,
+TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+{
+Color = Color3.fromRGB(0, 255, 0),
+Thickness = 1.2,
+Transparency = 0.2,
+}
+)
+:Play()
+else
+prefixButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+TweenService
+:Create(
+buttonStroke,
+TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+{
+Color = prefixColors[prefix],
+Thickness = 1.0,
+Transparency = 0.5,
+}
+)
+:Play()
+end
+end)
+end
+local requestAddPetBox, requestAddPetStroke, requestAddPetText =
+createSettingRow(
+'Add Pet Delay (s)',
+CONFIG.ADD_PET_REQUEST_DELAY,
+petInputSection
+)
+requestAddPetBox.Position = UDim2.new(0, 0, 0, 72)
+requestAddPetText.Position = UDim2.new(0, 0, 0, 58)
+requestAddPetBox.FocusLost:Connect(function()
+local value = tonumber(requestAddPetBox.Text)
+if value and value >= 0 then
+CONFIG.ADD_PET_REQUEST_DELAY = value
+else
+end
+end)
+requestAddPetBox.Text = tostring(CONFIG.ADD_PET_REQUEST_DELAY)
+-- SMALLER Add Pet Buttonlocal addPetButton = Instance.new('TextButton')
+addPetButton.Size = UDim2.new(1, 0, 0, 22)
+addPetButton.Position = UDim2.new(0, 0, 0, 98)
+addPetButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+addPetButton.BackgroundTransparency = 0.2
+addPetButton.Text = 'Add Pet to Trade'
+addPetButton.Font = Enum.Font.FredokaOne
+addPetButton.TextSize = 10
+addPetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+addPetButton.Parent = petInputSection
+local addPetCorner = Instance.new('UICorner')
+addPetCorner.CornerRadius = UDim.new(0, 4)
+addPetCorner.Parent = addPetButton
+local addPetStroke = Instance.new('UIStroke')
+addPetStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+addPetStroke.Color = Color3.fromRGB(255, 255, 255)
+addPetStroke.Thickness = 1.0
+addPetStroke.Transparency = 0.3
+addPetStroke.Parent = addPetButton
+-- SMALLER Remove Pet Button
+local removePetButton = Instance.new('TextButton')
+removePetButton.Size = UDim2.new(1, 0, 0, 22)
+removePetButton.Position = UDim2.new(0, 0, 0, 125)
+removePetButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+removePetButton.BackgroundTransparency = 0.2
+removePetButton.Text = 'Remove Latest Pet'
+removePetButton.Font = Enum.Font.FredokaOne
+removePetButton.TextSize = 10
+removePetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+removePetButton.Parent = petInputSection
+local removePetCorner = Instance.new('UICorner')
+removePetCorner.CornerRadius = UDim.new(0, 4)
+removePetCorner.Parent = removePetButton
+local removePetStroke = Instance.new('UIStroke')
+removePetStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+removePetStroke.Color = Color3.fromRGB(255, 100, 100)
+removePetStroke.Thickness = 1.0
+removePetStroke.Transparency = 0.3
+removePetStroke.Parent = removePetButton
+-- MODIFIED: Add Random Pet Button - Only adds high-value pets
+local addRandomPetButton = Instance.new('TextButton')
+addRandomPetButton.Size = UDim2.new(1, 0, 0, 22)
+addRandomPetButton.Position = UDim2.new(0, 0, 0, 152)
+addRandomPetButton.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
+addRandomPetButton.BackgroundTransparency = 0.2
+addRandomPetButton.Text = 'Add Random High-Value Pet'
+addRandomPetButton.Font = Enum.Font.FredokaOne
+addRandomPetButton.TextSize = 9addRandomPetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+addRandomPetButton.Parent = petInputSection
+local addRandomPetCorner = Instance.new('UICorner')
+addRandomPetCorner.CornerRadius = UDim.new(0, 4)
+addRandomPetCorner.Parent = addRandomPetButton
+local addRandomPetStroke = Instance.new('UIStroke')
+addRandomPetStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+addRandomPetStroke.Color = Color3.fromRGB(200, 100, 255)
+addRandomPetStroke.Thickness = 1.0
+addRandomPetStroke.Transparency = 0.3
+addRandomPetStroke.Parent = addRandomPetButton
+-- Integrated Pet List Section - SMALLER
+local petListSection = Instance.new('Frame')
+petListSection.Size = UDim2.new(1, 0, 0, 110)
+petListSection.Position = UDim2.new(0, 0, 0, 179)
+petListSection.BackgroundTransparency = 1
+petListSection.Parent = petsFrame
+local petListHeading = Instance.new('TextLabel')
+petListHeading.Size = UDim2.new(1, 0, 0, 14)
+petListHeading.BackgroundTransparency = 1
+petListHeading.Text = 'High-Value Pets (Balloon Unicorn+)'
+petListHeading.Font = Enum.Font.SourceSansSemibold
+petListHeading.TextSize = 10
+petListHeading.TextColor3 = Color3.fromRGB(180, 180, 180)
+petListHeading.TextXAlignment = Enum.TextXAlignment.Left
+petListHeading.Parent = petListSection
+local petListFrame = Instance.new('ScrollingFrame')
+petListFrame.Size = UDim2.new(1, 0, 0, 94)
+petListFrame.Position = UDim2.new(0, 0, 0, 16)
+petListFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+petListFrame.BackgroundTransparency = 0.5
+petListFrame.BorderSizePixel = 0
+petListFrame.ScrollBarThickness = 4
+petListFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+petListFrame.ScrollBarImageTransparency = 0.5
+petListFrame.Parent = petListSection
+local petListCorner = Instance.new('UICorner')
+petListCorner.CornerRadius = UDim.new(0, 4)
+petListCorner.Parent = petListFrame
+local petListLayout = Instance.new('UIListLayout')
+petListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+petListLayout.Padding = UDim.new(0, 3)
+petListLayout.Parent = petListFrame
+local petListPadding = Instance.new('UIPadding')
+petListPadding.PaddingTop = UDim.new(0, 4)
+petListPadding.PaddingBottom = UDim.new(0, 4)petListPadding.PaddingLeft = UDim.new(0, 4)
+petListPadding.PaddingRight = UDim.new(0, 4)
+petListPadding.Parent = petListFrame
+local petListButtons = {}
+function createPetListButton(petName, index)
+local button = Instance.new('TextButton')
+button.Size = UDim2.new(1, -8, 0, 22)
+button.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+button.BackgroundTransparency = 0.2
+button.Text = ''
+button.Parent = petListFrame
+local buttonCorner = Instance.new('UICorner')
+buttonCorner.CornerRadius = UDim.new(0, 4)
+buttonCorner.Parent = button
+local buttonStroke = Instance.new('UIStroke')
+buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+buttonStroke.Color = Color3.fromRGB(100, 100, 150)
+buttonStroke.Thickness = 1.0
+buttonStroke.Transparency = 0.3
+buttonStroke.Parent = button
+local nameLabel = Instance.new('TextLabel')
+nameLabel.Size = UDim2.new(1, -8, 1, 0)
+nameLabel.Position = UDim2.new(0, 4, 0, 0)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = petName
+nameLabel.Font = Enum.Font.FredokaOne
+nameLabel.TextSize = 9
+nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.TextTransparency = 0
+nameLabel.Parent = button
+local nameStroke = Instance.new('UIStroke')
+nameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+nameStroke.Color = Color3.new(0, 0, 0)
+nameStroke.Thickness = 0.8
+nameStroke.Transparency = 0.8
+nameStroke.Parent = nameLabel
+button.BackgroundTransparency = 1
+buttonStroke.Transparency = 1
+nameLabel.TextTransparency = 1
+nameStroke.Transparency = 1
+button.MouseButton1Click:Connect(function()
+local originalSize = button.Size
+TweenService:Create(
+button,
+TweenInfo.new(0.08,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Size = UDim2.new(
+originalSize.X.Scale,
+originalSize.X.Oﬀset - 2,
+originalSize.Y.Scale,
+originalSize.Y.Oﬀset - 2
+),
+}
+):Play()
+task.wait(0.08)
+TweenService
+:Create(
+button,
+TweenInfo.new(
+0.15,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+),
+{
+Size = originalSize,
+}
+)
+:Play()
+petNameBox.Text = petName
+TweenService
+:Create(
+petNameStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{
+Color = Color3.fromRGB(100, 150, 255),
+Thickness = 1.2,
+}
+)
+:Play()
+task.wait(0.5)
+TweenService
+:Create(
+petNameStroke,
+TweenInfo.new(
+0.3,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+),
+{Color = Color3.fromRGB(100, 100, 100),
+Thickness = 0.8,
+}
+)
+:Play()
+end)
+button.LayoutOrder = index
+return button
+end
+-- MODIFIED: Build pet list with only high-value pets
+function buildPetList()
+for _, child in ipairs(petListFrame:GetChildren()) do
+if child:IsA('TextButton') then
+child:Destroy()
+end
+end
+petListButtons = {}
+for i, petName in ipairs(highValuePets) do
+local button = createPetListButton(petName, i)
+table.insert(petListButtons, button)
+end
+end
+petListFrame.CanvasSize = UDim2.new(0, 0, 0, (#highValuePets * 25) + 8)
+function animatePetList()
+for i, button in ipairs(petListButtons) do
+local delay = (i - 1) * 0.05
+task.spawn(function()
+task.wait(delay)
+local buttonStroke = button:FindFirstChildOfClass('UIStroke')
+local nameLabel = button:FindFirstChildOfClass('TextLabel')
+local nameStroke = nameLabel
+and nameLabel:FindFirstChildOfClass('UIStroke')
+local stage1 = TweenInfo.new(
+0.1,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+local stage2 = TweenInfo.new(
+0.25,
+Enum.EasingStyle.Back,
+Enum.EasingDirection.Out
+)
+local stage3 = TweenInfo.new(
+0.15,
+Enum.EasingStyle.Quint,
+Enum.EasingDirection.Out
+)
+TweenService:Create(button, stage1, {Size = UDim2.new(1.02, -8, 0, 24),
+Position = UDim2.new(-0.01, 0, 0, 0),
+BackgroundTransparency = 0.4,
+}):Play()
+task.wait(0.1)
+TweenService:Create(button, stage2, {
+Size = UDim2.new(1, -8, 0, 22),
+Position = UDim2.new(0, 0, 0, 0),
+BackgroundTransparency = 0.2,
+}):Play()
+if buttonStroke then
+TweenService:Create(buttonStroke, stage2, {
+Thickness = 1.0,
+Transparency = 0.3,
+}):Play()
+end
+task.wait(0.06)
+if nameLabel then
+TweenService:Create(nameLabel, stage3, { TextTransparency = 0 })
+:Play()
+end
+if nameStroke then
+TweenService:Create(nameStroke, stage3, { Transparency = 0.8 })
+:Play()
+end
+end)
+end
+end
+buildPetList()
+-- Button functionality
+addPetButton.MouseButton1Click:Connect(function()
+local petName = petNameBox.Text
+if petName and petName ~= '' then
+local success, message =
+addPetToPartnerOﬀer(petName, petSpawnState.activeFlags)
+end
+end)
+removePetButton.MouseButton1Click:Connect(function()
+local success, message = removeLatestPetFromPartnerOﬀer()
+end)
+addRandomPetButton.MouseButton1Click:Connect(function()
+-- MODIFIED: Only add high-value pets
+local randomPet = getRandomHighValuePet()
+local randomProperties = generateRandomPetProperties()local success, message = addPetToPartnerOﬀer(randomPet, randomProperties)
+end)
+-- Initialize the GUI and functionality
+setActiveTab('Control')
+-- Drag functionality
+local dragging, dragStart, startPos
+mainFrame.InputBegan:Connect(function(input)
+if
+input.UserInputType == Enum.UserInputType.MouseButton1
+or input.UserInputType == Enum.UserInputType.Touch
+then
+end
+end)
+dragging = true
+dragStart = input.Position
+startPos = mainFrame.Position
+if
+UserInputService.InputChanged:Connect(function(input)
+dragging
+and (
+input.UserInputType == Enum.UserInputType.MouseMovement
+or input.UserInputType == Enum.UserInputType.Touch
+)
+then
+local delta = input.Position - dragStart
+mainFrame.Position = UDim2.new(
+startPos.X.Scale,
+startPos.X.Oﬀset + delta.X,
+startPos.Y.Scale,
+startPos.Y.Oﬀset + delta.Y
+)
+end
+end)
+if
+UserInputService.InputEnded:Connect(function(input)
+input.UserInputType == Enum.UserInputType.MouseButton1
+or input.UserInputType == Enum.UserInputType.Touch
+then
+end
+end)
+dragging = false
+print('✅ Complete MockTrade with HIGH-VALUE PETS ONLY loaded successfully!')
+print('📱 GUI size optimized to 180x380 with smaller buttons and text!')
+print('🎯 Bot spawning functions fully removed!')
+print('🎮 Noclip toggle removed!')
+print('🔄 Make Partner Unaccept button kept and made smaller!') 
